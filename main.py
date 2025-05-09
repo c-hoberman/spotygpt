@@ -65,10 +65,7 @@ def authorize():
 
 
 @app.post("/callback")
-async def callback(
-    code: str = Form(...),
-    state: Optional[str] = Form(None),
-):
+async def callback(code: str, state: Optional[str] = None):
     try:
         token = oauth.fetch_token(
             token_url="https://accounts.spotify.com/api/token",
@@ -80,5 +77,6 @@ async def callback(
         print("Token fetch failed:", e)
         return {"error": "token_fetch_failed", "details": str(e)}
 
+    return token
     # On success, show your HTML confirmation page
     return FileResponse("public/callback.html")
