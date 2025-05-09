@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spotify Auth Callback</title>
+</head>
+<body>
+  <h2>Authenticating with Spotify...</h2>
+  <script>
+    window.onload = function () {
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      const accessToken = params.get('access_token');
+
+      if (accessToken) {
+        localStorage.setItem('spotify_token', accessToken);
+        window.location.href = '/'; // or any landing/dashboard route
+      } else {
+        document.body.innerHTML = "<h2>Failed to retrieve access token.</h2>";
+      }
+    };
+  </script>
+</body>
+</html>
