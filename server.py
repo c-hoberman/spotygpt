@@ -9,6 +9,10 @@ CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 REDIRECT_URI = "https://yourdomain.com/oauth/callback"
 
+@app.get("/")
+def health_check():
+    return {"status": "ok"}
+
 @app.get("/oauth/login")
 def login():
     url = (
