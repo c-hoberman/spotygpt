@@ -12,6 +12,9 @@ app = FastAPI()
 SPOTIFY_AUTH_URL  = "https://accounts.spotify.com/authorize"
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
 
+SPOTIFY_CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID')
+SPOTIFY_CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET')
+
 oauth = OAuth2Session(
     client_id=SPOTIFY_CLIENT_ID,
     redirect_uri=REDIRECT_URI,
