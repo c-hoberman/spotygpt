@@ -29,6 +29,40 @@ CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 REDIRECT_URI = "https://yourdomain.com/oauth/callback"
 
+
+CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+
+@app.get("/oauth/callback")
+async def oauth_callback(request: Request):
+    code = request.query_params.get("code")
+    if not code:
+        raise HTTPException(400, "Missing code in callback")
+
+    data = {
+        "grant_type":    "authorization_code",
+        "code":          code,
+        "redirect_uri":  REDIRECT_URI,
+        "client_id":     CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
+    }
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            "https://accounts.spotify.com/api/token",
+            data=data, headers=headers
+        )
+    if resp.status_code != 200:
+        raise HTTPException(resp.status_code, f"Token exchange failed: {resp.text}")
+
+    tokens = resp.json()  
+    # tokens contains: access_token, token_type, expires_in, refresh_token, scope
+
+    # For now, stash them in memory (you can swap this for a DB or file)
+    request.app.state.spotify_tokens = tokens
+
+    return JSONResponse({"message": "Spotify authentication successful! You can close this tab."})
+
 @app.get("/")
 def health_check():
     return {"status": "ok"}
