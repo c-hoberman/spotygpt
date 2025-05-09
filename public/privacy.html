@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Privacy Policy</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }
+    h1, h2 { color: #333; }
+    p { margin-bottom: 10px; }
+    ul { margin-bottom: 20px; }
+    a { color: #1DB954; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy</h1>
+  <p><strong>Effective date:</strong> May 9, 2025</p>
+  <p><strong>[Your App Name]</strong> (“we,” “us,” or “our”) operates the website and API at <a href="https://spotygpt.onrender.com">https://spotygpt.onrender.com</a> (the “Service”). This Privacy Policy explains how we collect, use, and protect information when you use our Service, including via the Custom GPT Spotify integration.</p>
+
+  <h2>1. Information We Collect</h2>
+  <ul>
+    <li><strong>Spotify Authorization Token</strong><br />
+      When you click “Authorize with Spotify,” we never see or store your Spotify password. Instead, we receive a time-limited access token and refresh token directly from Spotify via OAuth. We store these tokens in encrypted form solely to call the Spotify Web API on your behalf.</li>
+    <li><strong>Usage Data</strong><br />
+      We log API requests (endpoints called, timestamps) to monitor and debug the Service. These logs do <em>not</em> contain personal listening history or profile data beyond what you explicitly request (e.g., adding a track to a playlist).</li>
+  </ul>
+
+  <h2>2. How We Use Your Information</h2>
+  <ul>
+    <li><strong>API Calls on Your Behalf</strong><br />
+      We use your Spotify access token only to perform actions you’ve requested—such as adding tracks to your playlists. We do not read or store any other data from your account.</li>
+    <li><strong>Analytics &amp; Improvement</strong><br />
+      We analyze aggregated, anonymized usage metrics (e.g., number of calls per day) to improve performance and reliability. No personal data is retained in analytics.</li>
+  </ul>
+
+  <h2>3. Data Retention</h2>
+  <ul>
+    <li><strong>Tokens</strong><br />
+      Your Spotify access and refresh tokens persist until you revoke access (in ChatGPT’s sidebar → “Revoke authorization”) or until they expire and refresh fail. After revocation or inactivity, tokens are deleted immediately.</li>
+    <li><strong>Logs</strong><br />
+      Request logs are retained up to 30 days and then permanently deleted.</li>
+  </ul>
+
+  <h2>4. Third-Party Services</h2>
+  <p>We rely on the following services:</p>
+  <ul>
+    <li><strong>Spotify, Inc.</strong> for OAuth authentication and Web API.</li>
+    <li><strong>Render.com</strong> for hosting and environment management.</li>
+    <li><strong>OpenAI / ChatGPT</strong> for the Custom GPT interface and OAuth callback handling.</li>
+  </ul>
+
+  <h2>5. Security</h2>
+  <ul>
+    <li>All data in transit is encrypted via TLS (HTTPS).</li>
+    <li>Tokens are stored encrypted at rest.</li>
+    <li>Access to production environment variables is limited and audited.</li>
+  </ul>
+
+  <h2>6. Your Rights</h2>
+  <ul>
+    <li><strong>Access &amp; Deletion</strong><br />
+      You can revoke our access at any time via Spotify’s Account Settings → Apps, or via the “Revoke authorization” button in ChatGPT’s sidebar. That will delete your tokens from our system.</li>
+    <li><strong>Support</strong><br />
+      If you need a copy of any data we hold about you or wish to request deletion of logs, please contact us.</li>
+  </ul>
+
+  <h2>7. Contact Us</h2>
+  <p>If you have any questions about this Privacy Policy or our practices, you can reach us at:</p>
+  <p><strong>[Your Company Name]</strong><br />
+  Email: <a href="mailto:privacy@yourdomain.com">privacy@yourdomain.com</a><br />
+  Address: [Your Address]</p>
+</body>
+</html>
