@@ -14,23 +14,27 @@ app.mount("/static", StaticFiles(directory="public"), name="static")
 async def serve_callback():
     return FileResponse("public/oauth/callback.html")
 
-# Pull secrets from environment – never commit these to GitHub!
 sp_oauth = SpotifyOAuth(
     client_id=os.getenv("SPOTIFY_CLIENT_ID"),
     client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
     redirect_uri=os.getenv("REDIRECT_URI"),
-    scope="playlist-modify-public playlist-modify-private"
+    scope="playlist-modify-public playlist-modify-private",
 )
 
 @app.get("/authorize")
 def authorize():
-    # Redirect the user to Spotify’s login/consent screen
-    auth_url = sp_oauth.get_authorize_url()
-    return RedirectResponse(auth_url)
+    # This always generates a fresh auth URL
+    return RedirectResponse(sp_oauth.get_authorize_url())
 
 @app.get("/callback")
 async def callback(request: Request):
+    error = request.query_params.get("error")
+    if error:
+        # 1) clear Spotipy’s cache for this user
+        sp_oauth.cache_handler.delete_cached_token()
+        # 2) redirect straight back into the auth flow
+        return RedirectResponse("/authorize")
     code = request.query_params.get("code")
     token_info = sp_oauth.get_access_token(code, as_dict=True)
-    # TODO: securely store token_info in your user session or DB
+    # store token_info and continue…
     return {"status": "authorized"}
