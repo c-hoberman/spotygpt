@@ -11,6 +11,11 @@ app = FastAPI()
 SPOTIFY_AUTH_URL  = "https://accounts.spotify.com/authorize"
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
 
+oauth = OAuth2Session(
+    client_id=SPOTIFY_CLIENT_ID,
+    redirect_uri=REDIRECT_URI,
+)
+
 @app.get("/oauth2/authorize")
 def proxy_authorize():
     # forward query string to Spotify’s authorize URL
