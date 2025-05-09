@@ -64,7 +64,7 @@ def authorize():
     return RedirectResponse(auth_url)
 
 
-@app.post("/callback")
+@app.get("/callback")
 async def callback(code: str, state: Optional[str] = None):
     try:
         token = oauth.fetch_token(
