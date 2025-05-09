@@ -1,4 +1,5 @@
 # File: server.py
+from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
 import httpx
