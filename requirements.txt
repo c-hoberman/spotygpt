@@ -1,5 +1,5 @@
 fastapi>=0.95.1
 uvicorn[standard]>=0.22.0
-spotipy==2.30.0
+spotipy>=2.20.0,<3.0.0
 python-dotenv>=1.0.0
 httpx>=0.24.0
