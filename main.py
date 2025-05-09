@@ -26,48 +26,54 @@ sp_oauth = SpotifyOAuth(
     cache_path=".cache-debug",
 )
 
-# Step 2 goes here: force the dialog in your authorize route
-
-@app.get("/authorize")
+# Hand-craft the authorize redirect to Spotify
 @app.get("/authorize")
 def authorize():
-    try:
-        # delete old cache file…
+     # delete old cache file…
         cache_path = sp_oauth.cache_handler.cache_path
         if cache_path and os.path.exists(cache_path):
             os.remove(cache_path)
+    client_id    = os.getenv("SPOTIFY_CLIENT_ID")
+    redirect_uri = os.getenv("REDIRECT_URI")  # should be ".../callback"
+    scope        = "playlist-modify-public playlist-modify-private"
+    params = {
+      "client_id":     client_id,
+      "response_type": "code",
+      "redirect_uri":  redirect_uri,
+      "scope":         scope,
+      "show_dialog":   "true"
+    }
+    from urllib.parse import urlencode
+    auth_url = f"https://accounts.spotify.com/authorize?{urlencode(params)}"
+    logging.debug("→ Redirecting to: %s", auth_url)
+    return RedirectResponse(auth_url)
 
-        # build the URL (no show_dialog arg)
-        auth_url = sp_oauth.get_authorize_url()
-        # manually tack on the param
-        if "?" in auth_url:
-            auth_url += "&show_dialog=true"
-        else:
-            auth_url += "?show_dialog=true"
-
-        logging.debug("Auth URL with show_dialog → %s", auth_url)
-        return RedirectResponse(auth_url)
-
-    except Exception as e:
-        logging.exception("Error in /authorize")
-        return JSONResponse({"error": "authorize_failed", "details": str(e)}, status_code=500)
-
-
-# This must match your REDIRECT_URI path too!
+# Dynamic code-exchange handler at /callback
 @app.get("/callback")
 async def callback(request: Request):
-    error = request.query_params.get("error")
-    code  = request.query_params.get("code")
-    logging.debug("Callback error=%r code=%r", error, code)
+    logging.debug("▶️ Hit /callback URL: %s", request.url)
+    logging.debug("   query params: %r", dict(request.query_params))
 
+    error = request.query_params.get("error")
     if error:
+        logging.error("❌ Spotify returned error: %s", error)
         return RedirectResponse("/authorize")
 
+    code = request.query_params.get("code")
+    logging.debug("️⃣ Received code: %r", code)
     try:
+        sp_oauth = SpotifyOAuth(
+            client_id=os.getenv("SPOTIFY_CLIENT_ID"),
+            client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
+            redirect_uri=os.getenv("REDIRECT_URI"),
+            cache_path=".cache-debug",
+        )
         token_info = sp_oauth.get_access_token(code, as_dict=True)
-        logging.debug("Token info: %r", token_info)
+        logging.debug("✅ Token info: %r", token_info)
+        return {"status": "authorized"}
     except Exception as e:
-        logging.error("Token exchange failed: %s", e)
-        return JSONResponse({"failed": str(e)}, status_code=400)
-
-    return {"status": "authorized"}
+        logging.exception("🔥 Token exchange failed")
+        return JSONResponse(
+            status_code=400,
+            content={"error": "token_exchange_failed", "details": str(e)}
+        )
