@@ -4,7 +4,26 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
 import httpx
 import os
+import urllib.parse
 
+app = FastAPI()
+
+CLIENT_ID     = os.getenv("SPOTIFY_CLIENT_ID")
+REDIRECT_URI  = os.getenv("REDIRECT_URI")
+SCOPES        = "user-read-private user-read-email playlist-modify-public playlist-modify-private"
+
+@app.get("/oauth/login")
+def oauth_login():
+    params = {
+        "client_id": CLIENT_ID,
+        "response_type": "code",
+        "redirect_uri": REDIRECT_URI,
+        "scope": SCOPES,
+        # optional: send a random “state” string here and verify it in callback
+    }
+    url = "https://accounts.spotify.com/authorize?" + urllib.parse.urlencode(params)
+    return RedirectResponse(url)
+    
 app = FastAPI()
 CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
