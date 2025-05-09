@@ -32,10 +32,12 @@ def authorize():
     sp_oauth.cache_handler.delete_cached_token()
     logging.debug("SPOTIFY_CLIENT_ID=%r", os.getenv("SPOTIFY_CLIENT_ID"))
     logging.debug("REDIRECT_URI=%r",      os.getenv("REDIRECT_URI"))
-    # ← show_dialog=True is Step 2
+
+    # generate the Spotify consent URL
     auth_url = sp_oauth.get_authorize_url(show_dialog=True)
     logging.debug("Auth URL: %s", auth_url)
-    # return a redirect so the browser actually navigates to Spotify
+
+    # THIS will navigate the user’s browser to Spotify
     return RedirectResponse(auth_url)
 
 # This must match your REDIRECT_URI path too!
