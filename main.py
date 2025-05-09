@@ -30,9 +30,9 @@ sp_oauth = SpotifyOAuth(
 @app.get("/authorize")
 def authorize():
      # delete old cache file…
-        cache_path = sp_oauth.cache_handler.cache_path
-        if cache_path and os.path.exists(cache_path):
-            os.remove(cache_path)
+    cache_path = sp_oauth.cache_handler.cache_path
+    if cache_path and os.path.exists(cache_path):
+        os.remove(cache_path)
     client_id    = os.getenv("SPOTIFY_CLIENT_ID")
     redirect_uri = os.getenv("REDIRECT_URI")  # should be ".../callback"
     scope        = "playlist-modify-public playlist-modify-private"
