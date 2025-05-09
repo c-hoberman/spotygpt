@@ -1,0 +1,25 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Spotify Connector",
+  "name_for_model": "spotify_connector",
+  "description_for_human": "Connect ChatGPT to your Spotify account to fetch playlists and playback info.",
+  "description_for_model": "Plugin to authenticate with Spotify and call Spotify Web API endpoints via provided routes.",
+  "auth": {
+    "type": "oauth",
+    "client_url": "https://yourdomain.com/oauth/login",
+    "scope": "user-read-private playlist-read-private user-read-playback-state",
+    "authorization_url": "https://accounts.spotify.com/authorize",
+    "token_url": "https://accounts.spotify.com/api/token",
+    "verification_tokens": {
+      "openai": "<YOUR_OPENAI_VERIFICATION_TOKEN>"
+    }
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://yourdomain.com/.well-known/openapi.json",
+    "is_user_authenticated": true
+  },
+  "logo_url": "https://yourdomain.com/logo.png",
+  "contact_email": "support@yourdomain.com",
+  "legal_info_url": "https://yourdomain.com/terms"
+}
