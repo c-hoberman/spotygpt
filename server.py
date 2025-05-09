@@ -13,6 +13,12 @@ REDIRECT_URI = "https://yourdomain.com/oauth/callback"
 def health_check():
     return {"status": "ok"}
 
+app.mount(
+    "/.well-known",
+    StaticFiles(directory="static/.well-known"),
+    name="well-known"
+)
+
 @app.get("/oauth/login")
 def login():
     url = (
