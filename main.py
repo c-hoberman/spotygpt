@@ -13,9 +13,9 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="public"), name="static")
 
 # If your REDIRECT_URI is ".../oauth/callback", serve that here:
-@app.get("/oauth/callback")
+@app.get("/callback")
 async def serve_callback():
-    return FileResponse("public/oauth/callback.html")
+    return FileResponse("public/callback.html")
 
 # Spotify OAuth helper
 sp_oauth = SpotifyOAuth(
