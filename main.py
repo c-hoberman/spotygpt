@@ -3,6 +3,7 @@ import httpx
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import RedirectResponse, FileResponse, JSONResponse
 from spotipy import SpotifyOAuth
+from typing import Optional
 
 logging.basicConfig(level=logging.DEBUG)
 app = FastAPI()
