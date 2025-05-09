@@ -1,6 +1,6 @@
 # File: server.py
 from fastapi.staticfiles import StaticFiles
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import JSONResponse, RedirectResponse
 import httpx
 import os
@@ -62,6 +62,24 @@ async def oauth_callback(request: Request):
     request.app.state.spotify_tokens = tokens
 
     return JSONResponse({"message": "Spotify authentication successful! You can close this tab."})
+
+async def get_access_token():
+    tokens = app.state.spotify_tokens
+    if not tokens or "access_token" not in tokens:
+        raise HTTPException(401, "Not authenticated with Spotify")
+    return tokens["access_token"]
+
+@app.get("/playlists")
+async def get_playlists(key: str, access_token: str = Depends(get_access_token)):
+    if key != "supersecret123":
+        raise HTTPException(403, "Bad API key")
+    headers = {"Authorization": f"Bearer {access_token}"}
+    async with httpx.AsyncClient() as client:
+        r = await client.get(
+            "https://api.spotify.com/v1/me/playlists",
+            headers=headers, params={"limit": 50}
+        )
+    return r.json()
 
 @app.get("/")
 def health_check():
