@@ -28,17 +28,30 @@ sp_oauth = SpotifyOAuth(
 
 # Step 2 goes here: force the dialog in your authorize route
 @app.get("/authorize")
+@app.get("/authorize")
 def authorize():
-    sp_oauth.cache_handler.delete_cached_token()
-    logging.debug("SPOTIFY_CLIENT_ID=%r", os.getenv("SPOTIFY_CLIENT_ID"))
-    logging.debug("REDIRECT_URI=%r",      os.getenv("REDIRECT_URI"))
+    try:
+        # 1) Clear any old cache
+        sp_oauth.cache_handler.delete_cached_token()
 
-    # generate the Spotify consent URL
-    auth_url = sp_oauth.get_authorize_url(show_dialog=True)
-    logging.debug("Auth URL: %s", auth_url)
+        # 2) Log env vars
+        logging.debug("SPOTIFY_CLIENT_ID = %r", os.getenv("SPOTIFY_CLIENT_ID"))
+        logging.debug("REDIRECT_URI      = %r", os.getenv("REDIRECT_URI"))
 
-    # THIS will navigate the user’s browser to Spotify
-    return RedirectResponse(auth_url)
+        # 3) Build the URL
+        auth_url = sp_oauth.get_authorize_url(show_dialog=True)
+        logging.debug("Generated auth URL → %s", auth_url)
+
+        # 4) Redirect the browser
+        return RedirectResponse(auth_url)
+
+    except Exception as e:
+        # Catch & log the traceback for you
+        logging.exception("🔥 Error in /authorize")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "authorize_failed", "details": str(e)}
+        )
 
 # This must match your REDIRECT_URI path too!
 @app.get("/callback")
