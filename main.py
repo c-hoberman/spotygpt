@@ -62,31 +62,22 @@ def authorize():
     logging.debug("→ Redirecting to: %s", auth_url)
     return RedirectResponse(auth_url)
 
-@app.get("/callback")
-async def callback(request: Request):
-    logging.debug("▶️  Hit /callback: %s", request.url)
-    logging.debug("   params: %r", dict(request.query_params))
 
-    # If the user denied consent
-    if request.query_params.get("error"):
-        return RedirectResponse("/authorize")
-
-    code = request.query_params.get("code")
-    logging.debug("🔑 Received code: %r", code)
-
+@app.post("/callback")
+async def callback(
+    code: str = Form(...),
+    state: Optional[str] = Form(None),
+):
     try:
-        token_info = sp_oauth.get_access_token(code, as_dict=True)
-        logging.debug("✅ Token info: %r", token_info)
-    except Exception as e:
-        # Log full traceback
-        logging.exception("🔥 Token exchange exception")
-        # If it’s an HTTPError from Spotipy, log the raw response
-        if hasattr(e, "response"):
-            logging.error("Spotify responded: %s", e.response.text)
-        return JSONResponse(
-            status_code=400,
-            content={"error":"token_exchange_failed","details":str(e)}
+        token = oauth.fetch_token(
+            token_url="https://accounts.spotify.com/api/token",
+            code=code,
+            client_id=SPOTIFY_CLIENT_ID,
+            client_secret=SPOTIFY_CLIENT_SECRET,
         )
+    except Exception as e:
+        print("Token fetch failed:", e)
+        return {"error": "token_fetch_failed", "details": str(e)}
 
     # On success, show your HTML confirmation page
     return FileResponse("public/callback.html")
