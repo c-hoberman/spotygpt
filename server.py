@@ -1,9 +1,18 @@
 import os
 from fastapi import FastAPI, Request
-from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse, FileResponse
 from spotipy import SpotifyOAuth, Spotify
 
 app = FastAPI()
+
+# Mount the 'public' folder to serve static files
+app.mount("/static", StaticFiles(directory="public"), name="static")
+
+# Serve the callback page directly
+@app.get("/oauth/callback")
+async def serve_callback():
+    return FileResponse("public/oauth/callback.html")
 
 # Pull secrets from environment – never commit these to GitHub!
 sp_oauth = SpotifyOAuth(
