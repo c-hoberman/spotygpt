@@ -1,80 +1,65 @@
-import os
-import logging
-
+import os, logging, base64, requests
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import RedirectResponse, JSONResponse
-from spotipy import Spotify
-from spotipy.oauth2 import SpotifyOAuth
 
 logging.basicConfig(level=logging.INFO)
 app = FastAPI()
 
-# ————————————————
-# 1) ENV VAR SETUP (in Render or GitHub)
-# ————————————————
+# ─── Env vars ─────────────────────────────────────────────────────────────
 CLIENT_ID     = os.getenv("SPOTIFY_CLIENT_ID")
 CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
-REDIRECT_URI  = os.getenv("REDIRECT_URI")  # must match Spotify Dashboard exactly
-SCOPE         = "playlist-modify-public playlist-modify-private"
+REDIRECT_URI  = os.getenv("REDIRECT_URI")  # must match your Dashboard exactly
 
 if not CLIENT_ID or not CLIENT_SECRET or not REDIRECT_URI:
-    raise RuntimeError("Missing one of SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET / SPOTIPY_REDIRECT_URI")
+    raise RuntimeError(
+        "Missing env-vars: SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, or SPOTIFY_REDIRECT_URI"
+    )
 
-# ————————————————
-# 2) SPOTIPY OAUTH MANAGER (no cache, fresh every time)
-# ————————————————
-sp_oauth = SpotifyOAuth(
-    client_id=CLIENT_ID,
-    client_secret=CLIENT_SECRET,
-    redirect_uri=REDIRECT_URI,
-    scope=SCOPE,
-    cache_path=None,     # never write a cache file
-    show_dialog=True     # always force login prompt
-)
-
-# ————————————————
-# 3) /authorize → Spotify login
-# ————————————————
+# ─── /authorize endpoint ─────────────────────────────────────────────────
 @app.get("/authorize")
-def authorize(request: Request):
-    auth_url = sp_oauth.get_authorize_url()
-    logging.info(f"Redirecting user to Spotify auth: {auth_url}")
+def authorize():
+    from urllib.parse import urlencode
+    params = {
+        "client_id":     CLIENT_ID,
+        "response_type": "code",
+        "redirect_uri":  REDIRECT_URI,
+        "scope":         "playlist-modify-private playlist-modify-public",
+        "show_dialog":   "true"
+    }
+    auth_url = "https://accounts.spotify.com/authorize?" + urlencode(params)
+    logging.info("Redirecting to Spotify auth URL: %s", auth_url)
     return RedirectResponse(auth_url)
 
-# ————————————————
-# 4) /callback ← Spotify redirects back here
-# ————————————————
+# ─── /callback endpoint ──────────────────────────────────────────────────
 @app.get("/callback")
-def callback(code: str = None, error: str = None):
+def callback(request: Request):
+    code  = request.query_params.get("code")
+    error = request.query_params.get("error")
+    logging.info("Callback received; code=%s, error=%s", code, error)
+
     if error:
-        # User denied or something else went wrong
-        raise HTTPException(status_code=400, detail=f"Spotify error: {error}")
+        raise HTTPException(400, f"Spotify error: {error}")
+    if not code:
+        raise HTTPException(400, "No authorization code in callback")
 
-    try:
-        # Exchange code for fresh tokens
-        token_info = sp_oauth.get_access_token(code)
-    except Exception as e:
-        logging.error("Token exchange failed", exc_info=e)
-        return JSONResponse({"error": "token_exchange_failed", "details": str(e)}, status_code=400)
-
-    access_token  = token_info["access_token"]
-    refresh_token = token_info.get("refresh_token")
-
-    # Optional: return or store the refresh_token for later server-side refreshes.
-    sp = Spotify(auth=access_token)
-    user = sp.current_user()
-
-    return {
-        "access_token":  access_token,
-        "refresh_token": refresh_token,
-        "user":          {"id": user["id"], "display_name": user["display_name"]},
+    # Exchange code for tokens
+    auth_str = f"{CLIENT_ID}:{CLIENT_SECRET}".encode()
+    b64_auth = base64.b64encode(auth_str).decode()
+    headers = {
+        "Authorization": f"Basic {b64_auth}",
+        "Content-Type":  "application/x-www-form-urlencoded"
     }
+    data = {
+        "grant_type":   "authorization_code",
+        "code":         code,
+        "redirect_uri": REDIRECT_URI
+    }
+    resp = requests.post("https://accounts.spotify.com/api/token", headers=headers, data=data)
+    logging.info("Token exchange status: %s", resp.status_code)
+    if not resp.ok:
+        # print Spotify’s error JSON so we can debug it
+        logging.error("Spotify token error: %s", resp.text)
+        return JSONResponse(status_code=resp.status_code, content=resp.json())
 
-# ————————————————
-# 5) Example protected endpoint
-# ————————————————
-@app.get("/me")
-def me(token: str):
-    """Call this with ?token=<access_token> to fetch your Spotify profile."""
-    sp = Spotify(auth=token)
-    return sp.current_user()
+    token_info = resp.json()
+    return token_info  # contains access_token, refresh_token, etc.
