@@ -14,7 +14,7 @@ app = FastAPI()
 # ————————————————
 CLIENT_ID     = os.getenv("SPOTIFY_CLIENT_ID")
 CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
-REDIRECT_URI  = os.getenv("SPOTIPY_REDIRECT_URI")  # must match Spotify Dashboard exactly
+REDIRECT_URI  = os.getenv("SPOTIFY_REDIRECT_URI")  # must match Spotify Dashboard exactly
 SCOPE         = "playlist-modify-public playlist-modify-private"
 
 if not CLIENT_ID or not CLIENT_SECRET or not REDIRECT_URI:
