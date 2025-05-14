@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse, JSONResponse
 logging.basicConfig(level=logging.INFO)
 app = FastAPI()
 
-print("→ SPOTIFY_REDIRECT_URI is:", os.getenv("SPOTIFY_REDIRECT_URI"))
+print("→ SPOTIFY_REDIRECT_URI is:", os.getenv("REDIRECT_URI"))
 # ─── Env vars ─────────────────────────────────────────────────────────────
 CLIENT_ID     = os.getenv("SPOTIFY_CLIENT_ID")
 CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
